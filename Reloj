@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="gl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gasto en Tempo Real</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #222;
+            color: white;
+        }
+        .counter {
+            font-size: 3em;
+            font-weight: bold;
+            color: #ff6b6b;
+            transition: transform 0.2s ease-in-out;
+        }
+        .explode {
+            animation: explode 0.3s ease-in-out;
+        }
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .datetime {
+            font-size: 1.5em;
+            margin-top: 20px;
+            color: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>RELOX DE CUSTOS FIXOS</h1>
+    <h1>Acumulado mensual</h1>
+    
+    <p class="counter" id="contador">0 €/segundo</p>
+    <p class="datetime" id="dataHora">Cargando data...</p>
+
+    <script>
+        const COSTE_POR_SEGUNDO = 0.005; // 0,005€ cada segundo
+        let ultimoGasto = 0;
+
+        function obterSegundosDesdeInicioMes() {
+            let agora = new Date();
+            let inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1, 0, 0, 0);
+            return Math.floor((agora - inicioMes) / 1000); // Segundos desde o día 1 do mes ata agora
+        }
+
+        function obterDataHoraActual() {
+            let agora = new Date();
+            let dia = agora.getDate().toString().padStart(2, '0');
+            let mes = (agora.getMonth() + 1).toString().padStart(2, '0'); // Os meses van de 0 a 11
+            let ano = agora.getFullYear();
+            let horas = agora.getHours().toString().padStart(2, '0');
+            let minutos = agora.getMinutes().toString().padStart(2, '0');
+            let segundos = agora.getSeconds().toString().padStart(2, '0');
+            return `${dia}/${mes}/${ano} - ${horas}:${minutos}:${segundos}`;
+        }
+
+        function actualizarContador() {
+            let segundos = obterSegundosDesdeInicioMes();
+            let gasto = segundos * COSTE_POR_SEGUNDO; // Multiplicamos polos segundos transcorridos
+            let contadorElemento = document.getElementById("contador");
+
+            // Se o novo gasto superou un múltiplo de 10€, fai a explosión
+            if (Math.floor(gasto / 10) > Math.floor(ultimoGasto / 10)) {
+                contadorElemento.classList.add("explode");
+                setTimeout(() => contadorElemento.classList.remove("explode"), 300);
+            }
+
+            contadorElemento.textContent = gasto.toFixed(2).replace('.', ',') + " €/segundo";
+            document.getElementById("dataHora").textContent = obterDataHoraActual();
+            
+            ultimoGasto = gasto;
+        }
+
+        // Actualizar ao cargar e cada segundo
+        actualizarContador();
+        setInterval(actualizarContador, 1000);
+    </script>
+
+</body>
+</html>
